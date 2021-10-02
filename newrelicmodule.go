@@ -6,11 +6,9 @@ import (
 	"os"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"go.uber.org/zap"
 )
 
 var app *newrelic.Application
-var Sugar *zap.SugaredLogger
 
 func getEnv(key string) string {
 	var env string
@@ -22,13 +20,11 @@ func getEnv(key string) string {
 
 }
 
-func init() {
-	logger, _ := zap.NewProduction()
-	defer logger.Sync()
-	Sugar = logger.Sugar()
-}
+func createApplication() {
 
-func createApplication() error {
+	if app != nil {
+		return
+	}
 
 	var err error
 
@@ -40,19 +36,15 @@ func createApplication() error {
 	)
 
 	if nil != err {
-		Sugar.Infof("Unable to create New Relic application..... Error %+v\n", err)
-	}
-
-	return err
-}
-
-func ProcessExternalSegment(externalSegmentRequestCh chan ExternalSegment, externalSegmentResponseCh chan ExternalSegment) {
-	err := createApplication()
-
-	if err != nil {
 		fmt.Printf("Unable to create New Relic application..... Error %+v\n", err)
 		os.Exit(1)
 	}
+
+}
+
+func ProcessExternalSegment(externalSegmentRequestCh chan ExternalSegment, externalSegmentResponseCh chan ExternalSegment) {
+
+	createApplication()
 
 	for {
 		msg := <-externalSegmentRequestCh
@@ -76,12 +68,8 @@ func ProcessExternalSegment(externalSegmentRequestCh chan ExternalSegment, exter
 }
 
 func LogError(errChan chan ErrorLog) {
-	err := createApplication()
 
-	if err != nil {
-		fmt.Printf("Unable to create New Relic application..... Error %+v\n", err)
-		os.Exit(1)
-	}
+	createApplication()
 
 	for {
 		errLog := <-errChan
