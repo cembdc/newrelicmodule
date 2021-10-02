@@ -31,8 +31,6 @@ func createApplication() {
 	app, err = newrelic.NewApplication(
 		newrelic.ConfigAppName(getEnv("NEW_RELIC_APP_NAME")),
 		newrelic.ConfigLicense(getEnv("NEW_RELIC_KEY")),
-		newrelic.ConfigDebugLogger(os.Stdout),
-		newrelic.ConfigDistributedTracerEnabled(true),
 	)
 
 	if nil != err {
