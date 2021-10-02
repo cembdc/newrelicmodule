@@ -7,3 +7,8 @@ type ExternalSegment struct {
 	Request         *http.Request
 	Response        *http.Response
 }
+
+type ErrorLog struct {
+	TransactionName string
+	Error           error
+}

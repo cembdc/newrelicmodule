@@ -1,6 +1,7 @@
 package newrelicmodule
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -49,7 +50,8 @@ func ProcessExternalSegment(externalSegmentRequestCh chan ExternalSegment, exter
 	err := createApplication()
 
 	if err != nil {
-		return
+		fmt.Printf("Unable to create New Relic application..... Error %+v\n", err)
+		os.Exit(1)
 	}
 
 	for {
@@ -69,6 +71,25 @@ func ProcessExternalSegment(externalSegmentRequestCh chan ExternalSegment, exter
 		externalSegmentResponseCh <- ExternalSegment{TransactionName: msg.TransactionName, Request: msg.Request, Response: resp}
 
 		seg.End()
+		txn.End()
+	}
+}
+
+func LogError(errChan chan ErrorLog) {
+	err := createApplication()
+
+	if err != nil {
+		fmt.Printf("Unable to create New Relic application..... Error %+v\n", err)
+		os.Exit(1)
+	}
+
+	for {
+		errLog := <-errChan
+
+		txn := app.StartTransaction(errLog.TransactionName)
+
+		txn.NoticeError(errLog.Error)
+
 		txn.End()
 	}
 }
